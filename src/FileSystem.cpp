@@ -196,63 +196,69 @@ string FileSystem::tree() const {
 
 }
 
-// modify to use left sibling instead of prev
+
 string FileSystem::touch(const string& name) {
 	Node * new_file = new Node(name,false,curr_,nullptr,nullptr);
 	Node * tmp = curr_->leftmostChild_;
+	Node * prev = nullptr;
 	if (tmp==nullptr) {
 		curr_->leftmostChild_ = new_file;
 		return "";
 	}
-	Node * prev = nullptr;
+
 	while (tmp != nullptr) {
-		prev = tmp;
 		if (tmp->name_ == name) {
+			delete new_file;
 			return "file/directory already exists";
 		}
-		if (name.compare(tmp->name_) <= 0 and tmp == curr_->leftmostChild_) {
-			curr_->leftmostChild_ = new_file;
+		if (name.compare(tmp->name_) < 0 ) {
+			if (prev==nullptr) {
+				curr_->leftmostChild_ = new_file;
+			}
+			else {
+				prev->rightSibling_ = new_file;
+			}
+
 			new_file->rightSibling_ = tmp;
 			return "";
 
 		}
-		if (name.compare(tmp->name_) <= 0){
-			prev->rightSibling_ = new_file;
-			new_file->rightSibling_ = tmp;
-			return "";
-		}
+		prev = tmp;
 		tmp = tmp->rightSibling_;
 
 	}
 	prev->rightSibling_ = new_file;
 	return "";
 
+
 }
 
 string FileSystem::mkdir(const string& name) {
 	Node * new_dir = new Node(name,true,curr_,nullptr,nullptr);
 	Node * tmp = curr_->leftmostChild_;
+	Node * prev = nullptr;
 	if (tmp==nullptr) {
 		curr_->leftmostChild_ = new_dir;
 		return "";
 	}
-	Node * prev = nullptr;
 	while (tmp != nullptr) {
-		prev = tmp;
 		if (tmp->name_ == name) {
+			delete new_dir;
 			return "file/directory already exists";
 		}
-		if (name.compare(tmp->name_) <= 0 and tmp == curr_->leftmostChild_) {
-			curr_->leftmostChild_ = new_dir;
+		if (name.compare(tmp->name_) < 0 ) {
+			if (prev==nullptr) {
+				curr_->leftmostChild_ = new_dir;
+			}
+			else {
+				prev->rightSibling_ = new_dir;
+			}
+
 			new_dir->rightSibling_ = tmp;
 			return "";
 
 		}
-		if (name.compare(tmp->name_) <= 0){
-			prev->rightSibling_ = new_dir;
-			new_dir->rightSibling_ = tmp;
-			return "";
-		}
+		prev = tmp;
 		tmp = tmp->rightSibling_;
 
 	}
