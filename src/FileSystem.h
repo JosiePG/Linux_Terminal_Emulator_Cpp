@@ -50,6 +50,9 @@ public:
 	// destructor
 	~FileSystem();
 
+	// determines if a file/dir is in the current directory
+	bool isInCurrentDir(const string& name) const;
+
 	// change directory
 	string cd(const string& path);
 

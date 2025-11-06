@@ -1,4 +1,5 @@
 #include "FileSystem.h"
+#include <iostream>
 
 Node::Node(const string& name, bool isDir, Node* parent, Node* leftmostChild, Node* rightSibling) {
 	name_ = name;
@@ -15,6 +16,7 @@ Node::~Node() {
 }
 
 Node* Node::leftSibling() const {
+	// need to make sure this doesn't break after mv etc
 	Node* cur = parent_->leftmostChild_;
 	if (cur == this) {
 		return nullptr;
@@ -98,6 +100,14 @@ FileSystem::~FileSystem() {
 
 }
 
+bool FileSystem::isInCurrentDir(const string& name) const {
+	if (ls().find(name)!=-1) {
+		return true;
+	}
+	return false;
+
+}
+
 string FileSystem::cd(const string& path) {
 	// could use switch see which is better
 	if (path=="..") {
@@ -113,9 +123,8 @@ string FileSystem::cd(const string& path) {
 		return "";
 	}
 
-	string ls_contents = ls();
 
-	if (ls_contents.find(path+"/")!=-1) {
+	if (isInCurrentDir(path+"/")) {
 		Node * subdir = curr_->leftmostChild_;
 		while (subdir->name_ != path) {
 			subdir = subdir->rightSibling_;
@@ -315,7 +324,133 @@ string FileSystem::rmdir(const string& name) {
 }
 
 string FileSystem::mv(const string& src, const string& dest) {
-	// IMPLEMENT ME
+if (src == dest) {
+        return "source and destination are the same";
+    }
 
-	return ""; // dummy
+    Node* src_node = nullptr;
+    Node* dest_node = nullptr;
+
+    if (dest == "..") {
+        if (curr_ == root_) {
+            return "invalid path";
+        }
+        dest_node = curr_->parent_;
+    }
+
+    Node* tmp = curr_->leftmostChild_;
+    while (tmp != nullptr) {
+        if (tmp->name_ == src) {
+            src_node = tmp;
+        }
+        if (tmp->name_ == dest && dest_node == nullptr) {
+            dest_node = tmp;
+        }
+        tmp = tmp->rightSibling_;
+    }
+
+    if (src_node == nullptr) {
+        return "source does not exist";
+    }
+
+
+    if (dest_node != nullptr && dest_node->isDir_) {
+        // CASE 1
+
+        Node* dest_child = dest_node->leftmostChild_;
+        while (dest_child != nullptr) {
+            if (src_node->name_ == dest_child->name_) {
+                return "destination already has file/directory of same name";
+            }
+            dest_child = dest_child->rightSibling_;
+        }
+
+        Node* tmp = curr_->leftmostChild_;
+        Node* prev = nullptr;
+
+        while (tmp != nullptr) {
+            if (tmp == src_node) {
+                if (prev == nullptr) {
+                    curr_->leftmostChild_ = src_node->rightSibling_;
+                } else {
+                    prev->rightSibling_ = src_node->rightSibling_;
+                }
+                break;
+            }
+            prev = tmp;
+            tmp = tmp->rightSibling_;
+        }
+
+        src_node->rightSibling_ = nullptr;
+
+        dest_child = dest_node->leftmostChild_;
+        Node* dest_prev = nullptr;
+
+        while (dest_child != nullptr) {
+            if (src_node->name_.compare(dest_child->name_) < 0) {
+                break;
+            }
+            dest_prev = dest_child;
+            dest_child = dest_child->rightSibling_;
+        }
+
+        if (dest_prev == nullptr) {
+            dest_node->leftmostChild_ = src_node;
+        } else {
+            dest_prev->rightSibling_ = src_node;
+        }
+        src_node->rightSibling_ = dest_child;
+        src_node->parent_ = dest_node;
+
+        return "";
+    }
+
+    if (dest_node != nullptr && !dest_node->isDir_) {
+        if (src_node->isDir_) {
+            return "source is a directory but destination is an existing file";
+        }
+        return "destination already has file of same name"; // dont get this
+    }
+
+
+    Node* tmp2 = curr_->leftmostChild_;
+    Node* prev = nullptr;
+
+    while (tmp2 != nullptr) {
+        if (tmp2 == src_node) {
+            if (prev == nullptr) {
+                curr_->leftmostChild_ = src_node->rightSibling_;
+            } else {
+                prev->rightSibling_ = src_node->rightSibling_;
+            }
+            break;
+        }
+        prev = tmp2;
+        tmp2 = tmp2->rightSibling_;
+    }
+
+    src_node->rightSibling_ = nullptr;
+
+    src_node->name_ = dest;
+
+    Node* curr_child = curr_->leftmostChild_;
+    Node* curr_prev = nullptr;
+
+    while (curr_child != nullptr) {
+        if (src_node->name_.compare(curr_child->name_) < 0) {
+            break;
+        }
+        curr_prev = curr_child;
+        curr_child = curr_child->rightSibling_;
+    }
+
+    if (curr_prev == nullptr) {
+        curr_->leftmostChild_ = src_node;
+    } else {
+        curr_prev->rightSibling_ = src_node;
+    }
+    src_node->rightSibling_ = curr_child;
+
+    return "";
+
 }
