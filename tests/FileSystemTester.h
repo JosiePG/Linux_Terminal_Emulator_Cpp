@@ -6,6 +6,18 @@ class FileSystemTester {
 public:
     FileSystemTester();
 
+    void testaa();
+    void testab();
+    void testac();
+    void testad();
+    void testae();
+    void testaf();
+    void testag();
+    void testah();
+    void testai();
+    void testaj();
+
+
     // ctor, pwd
     void testa();
     void testb();

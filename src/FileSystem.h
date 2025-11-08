@@ -50,9 +50,6 @@ public:
 	// destructor
 	~FileSystem();
 
-	// determines if a file/dir is in the current directory
-	bool isInCurrentDir(const string& name) const;
-
 	// change directory
 	string cd(const string& path);
 
@@ -62,13 +59,8 @@ public:
 	// display subtree contents
 	[[nodiscard]] string tree() const;
 
-
-
 	// print working directory
 	[[nodiscard]] string pwd() const;
-
-	// recursive function to iterate through ls for tree
-	string recursive_tree(Node * start_dir, string& res,int depth) const;
 
 	// create new file
 	string touch(const string& name);
@@ -84,6 +76,20 @@ public:
 
 	// move file/directory from src to dest
 	string mv(const string& src, const string& dest);
+
+private:
+
+	// recursive helper function to iterate through files/dirs from a starting directory
+	void recursiveTree(const Node * start_dir, string& res,int depth) const;
+
+	// helper function to remove a node from its current directory using un-linking
+	void removeNode(Node * cur_dir,Node * node);
+
+	//helper function to add a node to a new destination directory in alphabetical order
+	void insertNode(Node * dest_dir,Node * node);
+
+
+
 };
 
 #endif
